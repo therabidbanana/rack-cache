@@ -265,6 +265,10 @@ module Rack::Cache
     def store(response)
       strip_ignore_headers(response)
       metastore.store(@request, response, entitystore)
+      # Remove header so downstream apps won't choke on it,
+      # but only if explicitly disabled. Can't be stripped
+      # untile the digest is used to store the value
+      response.headers.delete('X-Content-Digest') if disable_digest_header?
       response.headers['Age'] = response.age.to_s
     rescue Exception => e
       log_error(e)

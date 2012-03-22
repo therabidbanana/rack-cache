@@ -81,7 +81,8 @@ module Rack::Cache
     # Set of response headers that are removed before storing them in the
     # cache. These headers are only removed for cacheable responses.  For
     # example, in most cases, it makes sense to prevent cookies from being
-    # stored in the cache.
+    # stored in the cache. It may also be useful to ignore X-Content-Digest
+    # if Rack::Cache is talking to another app that sets it.
     #
     # Default: ['Set-Cookie']
     option_accessor :ignore_headers
@@ -108,6 +109,9 @@ module Rack::Cache
     # Specifies whether the underlying entity store's native expiration should
     # be used.
     option_accessor :use_native_ttl
+
+    # Specifies whether Rack::Cache should return an X-Content-Digest header
+    option_accessor :disable_digest_header
 
     # The underlying options Hash. During initialization (or outside of a
     # request), this is a default values Hash. During a request, this is the
@@ -151,6 +155,7 @@ module Rack::Cache
         'rack-cache.allow_reload'     => false,
         'rack-cache.allow_revalidate' => false,
         'rack-cache.use_native_ttl'   => false,
+        'rack-cache.disable_digest_header' => false,
       }
       self.options = options
     end

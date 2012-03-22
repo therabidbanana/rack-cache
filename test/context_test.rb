@@ -25,6 +25,19 @@ describe 'Rack::Cache::Context' do
     response.headers.should.not.include 'Age'
   end
 
+  it 'does not respond with x-content-digest if disabled' do
+    respond_with 200, 'Cache-Control' => 'public', 'ETag' => '"FOO"'
+    get '/', 'rack-cache.disable_digest_header' => true
+
+    response.should.be.ok
+    response.body.should.equal 'Hello World'
+    response.headers.should.include 'Date'
+    response['X-Content-Digest'].should.be.nil
+    cache.trace.should.include :miss
+    cache.trace.should.include :store
+    cache.metastore.to_hash.keys.length.should.equal 1
+  end
+
   %w[post put delete].each do |request_method|
     it "invalidates on #{request_method} requests" do
       respond_with 200
@@ -451,6 +464,7 @@ describe 'Rack::Cache::Context' do
     cache.trace.should.include :store
     cache.metastore.to_hash.keys.length.should.equal 1
   end
+
 
   it 'caches responses with a max-age directive' do
     respond_with 200, 'Cache-Control' => 'max-age=5'
